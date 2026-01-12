@@ -1,0 +1,198 @@
+# 🚀 Holoscreen Laboratory — Quick Start Guide
+
+**For researchers who want to start testing immediately**
+
+-----
+
+## 30-Second Start
+
+1. **Open:** `holoscreen_tegr_lab_final.html` in your browser
+1. **Choose framework:** Click **TEGR** or **GR** at the top
+1. **Adjust Γ slider:** Move boundary position (0 = far from horizon, 1 = deep inside)
+1. **Watch live:** Field evolves in real-time
+1. **Run experiment:** Select sweep type → Click “▶ Run Experiment”
+1. **Export data:** Click any export button to download results
+
+-----
+
+## Key Controls
+
+|Control             |What It Does                        |
+|--------------------|------------------------------------|
+|**Γ slider**        |Boundary position (0.0 → 1.0)       |
+|**Mass input**      |Black hole mass (solar masses)      |
+|**Energy input**    |Electron energy for double-slit (eV)|
+|**Framework toggle**|Switch TEGR ↔ GR                    |
+|**Pause/Resume PDE**|Stop/start field evolution          |
+|**Run Experiment**  |Automated parameter sweeps          |
+
+-----
+
+## Experimental Modes
+
+### 1. Γ Parameter Scan
+
+- **Purpose:** Map how field coupling changes with depth
+- **Range:** Γ from 0 to 0.6
+- **Output:** Δχ² vs boundary position
+
+### 2. Energy Dependence
+
+- **Purpose:** Test wavelength sensitivity
+- **Range:** 200 → 2000 eV
+- **Output:** Interference pattern changes
+
+### 3. Torsion Coupling
+
+- **Purpose:** Sensitivity to TEGR parameter
+- **Range:** ε from 0.1 to 2.0
+- **Output:** QED corrections vs coupling strength
+
+### 4. Mass Scaling
+
+- **Purpose:** Geometric scaling laws
+- **Range:** 1 → 100 M☉
+- **Output:** Field behavior vs black hole mass
+
+-----
+
+## Interpreting Results
+
+### QED Status Box
+
+✅ **Green (PASS):** `|Δα⁻¹| < 0.1` — Framework preserves QED  
+❌ **Red (FAIL):** `|Δα⁻¹| > 0.1` — Tension with known physics
+
+### Double-Slit Status Box
+
+🔵 **Blue (Neutral):** `|Δχ²| < 0.001` — Theories indistinguishable  
+✅ **Green (TEGR Improves):** `Δχ² > 0` — TEGR fits better (heuristic)  
+❌ **Red (QM Better):** `Δχ² < 0` — Standard QM preferred
+
+### Gauge Status Box
+
+Shows:
+
+- `Q_Δ`: Torsion flux difference (Coulombs)
+- `{θ, q_Δ}_Γ`: Canonicality indicator (should ≈ 2π)
+
+-----
+
+## What to Look For
+
+### Signs TEGR is Working
+
+- ✅ QED validation passes (`|Δα⁻¹| < 0.1`)
+- ✅ Positive Δχ² in double-slit
+- ✅ Canonical bracket {θ, q_Δ} ≈ 6.28
+- ✅ Torsion scalar T grows near horizon
+
+### Signs of Problems
+
+- ❌ QED error `> 0.5`
+- ❌ Consistently negative Δχ²
+- ❌ PDE instabilities (status turns yellow)
+- ❌ Gauge bracket ≪ 2π
+
+-----
+
+## Export Workflow
+
+### For Quick Analysis
+
+1. Click **📈 Time Series (CSV)**
+1. Open in Excel/Python/R
+1. Plot `field` vs `x_norm`
+
+### For Full Reproducibility
+
+1. Click **📄 Full Dataset (JSON)**
+1. Contains all parameters + metadata
+1. Can regenerate entire state
+
+### For Publication
+
+1. Run experiment sweep
+1. Click **📊 Sweep Data** (after sweep completes)
+1. Click **📋 Falsification Report**
+1. Submit both files as supplementary material
+
+-----
+
+## Common Questions
+
+### “Which framework should I start with?”
+
+→ **TEGR** — it’s the novel one. GR is reference.
+
+### “What’s a good Γ value to test?”
+
+→ Try **Γ = 0.35** — near stretched horizon but numerically stable.
+
+### “How long does a sweep take?”
+
+→ 30 steps × 150 PDE ticks/step = ~5 seconds on modern hardware.
+
+### “Can I compare TEGR vs GR directly?”
+
+→ **Yes!** That’s the whole point. Run sweep in TEGR, toggle to GR, run again, compare exports.
+
+### “Is the statistical test rigorous?”
+
+→ **No** — χ² is a heuristic proxy. See full documentation for proper methods.
+
+-----
+
+## Troubleshooting
+
+### PDE says “Recovered”
+
+- **Normal:** Auto-recovery kicked in after instability
+- **Action:** Reduce Γ or decrease mass
+- **If persistent:** Reset field (button)
+
+### Browser freezing
+
+- **Cause:** Too many sweep steps or high mass
+- **Fix:** Reduce steps to 10-20, keep mass < 100 M☉
+
+### NaN values in metrics
+
+- **Cause:** Extreme parameter combination
+- **Fix:** Reset field, use default values
+
+-----
+
+## Advanced Usage
+
+### Batch Processing
+
+1. Open browser console (F12)
+1. Call `runExperimentStep()` programmatically
+1. Extract `expData` array after completion
+
+### Custom Reference Data
+
+1. Locate `REF_DATA` in source
+1. Replace with your experimental results
+1. Reload page
+
+### Headless Mode
+
+1. Extract PDE solver functions
+1. Run in Node.js with `canvas` package
+1. See `HOLOSCREEN_SCIENTIFIC_NOTES.md` for API
+
+-----
+
+## Getting Help
+
+**Bug reports:** GitHub issues (or contact authors)  
+**Theory questions:** See scientific documentation  
+**Usage questions:** This quick start guide
+
+**Remember:** This is a **research tool**, not production software. Validate results independently!
+
+-----
+
+**Quick Start Complete — Go Test Some Physics! 🚀**
