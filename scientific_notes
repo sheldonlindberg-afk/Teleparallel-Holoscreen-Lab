@@ -1,0 +1,467 @@
+# Teleparallel Holoscreen Laboratory — Scientific Documentation
+
+**Version:** 1.0.0-laboratory  
+**Authors:** James Lockwood, Sheldon Lindberg, Christopher Cyrek, Derek Burkeen  
+**Date:** January 2026
+
+-----
+
+## Executive Summary
+
+This is a **controlled comparative apparatus** for testing geometric formulations of gravity near event horizons. It implements:
+
+1. **TEGR (Teleparallel):** Weitzenböck connection, torsion-based θ(ω,Γ) field
+1. **GR (Standard):** Levi-Civita connection, curvature-based R(x,t) field
+
+Both theories share:
+
+- Same PDE solver (TVD-limited advection-diffusion)
+- Same boundary conditions
+- Same experimental protocols
+- Same statistical analysis
+
+**Key Innovation:** Framework toggle enables **falsification** by direct comparison.
+
+-----
+
+## Theoretical Framework
+
+### TEGR Formulation
+
+**Action:**
+
+```
+S = (1/2κ) ∫ e T d⁴x
+```
+
+where:
+
+- `e = det(e^a_μ)` is the tetrad determinant
+- `T = S^ρ_μν T^μν_ρ` is the torsion scalar
+- `κ = 8πG/c⁴` is Einstein’s constant
+
+**Geometric Objects:**
+
+|Quantity      |Definition                                            |Role                              |
+|--------------|------------------------------------------------------|----------------------------------|
+|Torsion Tensor|`T^ρ_μν = Γ̃^ρ_μν - Γ̃^ρ_νμ`                            |Asymmetry of connection           |
+|Contorsion    |`K^ρ_μν = (1/2)(T^ρ_νμ + T^ρ_μν - T_μν^ρ)`            |Torsion contribution to connection|
+|Superpotential|`S^ρ_μν = (1/2)(K^μν_ρ + δ^μ_ρ T^σν_σ - δ^ν_ρ T^σμ_σ)`|Torsion energy-momentum           |
+
+**Field Equations:**
+
+```
+∂_μ(e S^μν_ρ) - e T_αμ^ν S^μα_ρ + (κ/4)e δ^ν_ρ T = (κ/2)e T^ν_ρ
+```
+
+### GR Formulation (Reference)
+
+**Action:**
+
+```
+S = (1/2κ) ∫ √−g R d⁴x
+```
+
+**Connection:** Levi-Civita (torsion-free, metric-compatible)
+
+-----
+
+## Numerical Implementation
+
+### PDE Solver
+
+**Method:** TVD-limited advection-diffusion
+
+```
+∂_t θ = D∇²θ + source(Γ,T) + advection(v) + relaxation + sink
+```
+
+**Grid:**
+
+- Spatial: N_x = 192 cells
+- Temporal: Δt = 4.5 × 10⁻³ (CFL-stable)
+- Domain: Schwarzschild exterior [r_s, 4r_s]
+
+**Stability:**
+
+- Real-time NaN/Inf detection
+- Auto-recovery after 3 consecutive instabilities
+- Conservative capping: θ ∈ [0, π]
+
+### Framework-Specific Modifications
+
+|Feature       |TEGR                                   |GR                  |
+|--------------|---------------------------------------|--------------------|
+|Source term   |Includes torsion coupling: `(1 + 0.3T)`|Standard: no torsion|
+|Field cap     |π (canonical phase)                    |0.8 (heuristic)     |
+|QED correction|`δα⁻¹ = ε T ln(E/E₀)` where ε ≈ 10⁻⁴   |None                |
+
+**Critical:** Same numerics → deviations are theory-driven, not solver artifacts.
+
+-----
+
+## Gauge-Invariant Observables
+
+### Boundary Flux Construction
+
+**Geometric Boundary:** Surface at fixed Γ parameter  
+**Field Boundary:** Isosurface of θ(ω,Γ)
+
+**Flux Difference:**
+
+```
+Q_Δ = ∫_Σ (⋆T_geometric - ⋆T_field)
+```
+
+**Dimensionless Charge:**
+
+```
+q_Δ = Q_Δ / e
+```
+
+**Canonical Phase:**
+
+```
+θ = 2π q_Δ
+```
+
+### Canonicality Indicator
+
+**Metric:**
+
+```
+{θ, q_Δ}_Γ ≈ 2π
+```
+
+**Interpretation:**
+
+- This is a **diagnostic**, not a derived symplectic bracket
+- It tests whether (θ, q_Δ) behave like canonical conjugates
+- Deviations indicate non-canonical structure
+
+**Tooltip (in UI):**
+
+> “Proxy diagnostic for canonical structure; not a fundamental symplectic derivation.”
+
+**Critical Disclaimer:** This quantity uses a phenomenological model:
+
+```javascript
+return Math.tanh(M_dim / (lambda + 1)) * 1e6 * torsionFactor
+```
+
+It is:
+
+- ✅ Useful as a consistency check
+- ✅ Framework-dependent (includes torsion factor)
+- ❌ NOT a first-principles calculation
+- ❌ NOT a claimed fundamental bracket
+
+-----
+
+## QED Recovery Validation
+
+### Purpose
+
+This section tests whether the framework **preserves known QED** at high energies.
+
+### Method
+
+**Standard QED Running:**
+
+```
+α⁻¹(E) = α⁻¹(E₀) - β ln(E/E₀)
+```
+
+where `β = 2/(3π) ≈ 0.2122`
+
+**TEGR Correction:**
+
+```
+δα⁻¹ = ε T(Γ) ln(E/E₀)
+```
+
+where:
+
+- `ε ≈ 10⁻⁴` is a small coupling
+- `T(Γ)` is the torsion scalar at boundary Γ
+
+**Test:**
+
+- Predict `α⁻¹(M_Z)` from CODATA `α⁻¹(0) = 137.035999084`
+- Compare to literature value `α⁻¹(M_Z) = 134.47`
+- Require `|Δα⁻¹| < 0.1` for validation
+
+**Status:** PASS if error < 0.1, FAIL otherwise
+
+**Critical:** GR mode has `ε = 0` → no correction → isolates torsion effect
+
+-----
+
+## Double-Slit Falsification Protocol
+
+### Hypothesis
+
+**TEGR Prediction:**
+
+```
+V_TEGR = V_QM × exp(-θ(ω,Γ))
+```
+
+**Null Hypothesis:**
+
+```
+V_TEGR = V_QM  (no modification)
+```
+
+### Experimental Setup
+
+- **Source:** Electrons at energy E (100 → 10,000 eV)
+- **Slits:** Width a, separation d (nanometer scale)
+- **Screen distance:** L = 0.305 m
+- **Observable:** Interference pattern intensity I(y)
+
+### Statistical Test
+
+**Method:** χ² goodness-of-fit
+
+```
+χ²_QM = Σ(I_data - I_QM)² / N
+χ²_TEGR = Σ(I_data - I_TEGR)² / N
+Δχ² = χ²_QM - χ²_TEGR
+```
+
+**Proxy Metric:**
+
+```
+√|Δχ²| > 3  ⇒  "potentially distinguishable" (heuristic only)
+```
+
+### CRITICAL STATISTICAL DISCLAIMER
+
+**These metrics are heuristic proxies, NOT rigorous hypothesis tests.**
+
+Proper falsification requires:
+
+1. **Bootstrap confidence intervals** (Monte Carlo resampling)
+1. **Systematic uncertainty analysis** (detector response, alignment)
+1. **Multiple independent configurations** (varied E, a, d, L)
+1. **Peer-reviewed statistical protocols** (preregistered analysis plan)
+
+The threshold “√|Δχ²| > 3” is a **rough guideline**, not a formal significance level.
+
+**Status:**
+
+- `|Δχ²| < 0.001`: Indistinguishable
+- `Δχ² > 0`: TEGR improves fit (heuristic)
+- `Δχ² < 0`: QM better (heuristic)
+
+-----
+
+## Automated Experimental Sweeps
+
+### Available Experiments
+
+|Type            |Variable         |Range        |Purpose                    |
+|----------------|-----------------|-------------|---------------------------|
+|Γ Scan          |Boundary position|0 → 0.6      |Map field coupling vs depth|
+|Energy          |Electron energy  |200 → 2000 eV|Test wavelength dependence |
+|Torsion Coupling|ε parameter      |0.1 → 2.0    |Sensitivity analysis       |
+|Mass Scaling    |BH mass          |1 → 100 M☉   |Geometric scaling laws     |
+
+### Data Output
+
+Each sweep generates:
+
+- **Framework identifier** (TEGR vs GR)
+- **Parameter trajectory** (Γ, E, etc.)
+- **Field evolution** (θ or R at each step)
+- **Observable changes** (Δχ², contrast, etc.)
+- **Convergence metrics** (PDE stability)
+
+-----
+
+## Data Export Formats
+
+### JSON (Full Dataset)
+
+**Structure:**
+
+```json
+{
+  "meta": {
+    "title": "Teleparallel Holoscreen Laboratory Data",
+    "timestamp": "2026-01-12T23:45:00Z",
+    "version": "1.0.0-laboratory",
+    "framework": "TEGR",
+    "authors": ["Lockwood", "Lindberg", "Cyrek", "Burkeen"]
+  },
+  "parameters": { ... },
+  "field": {
+    "type": "theta(omega,Gamma)",
+    "profile": [0.021, 0.023, ...],
+    ...
+  },
+  "teleparallel": {
+    "torsion_scalar": 1.234e-6,
+    "contorsion": 5.678e-8,
+    "superpotential": 9.012e-10
+  },
+  "gauge_observables": { ... }
+}
+```
+
+### CSV (Time Series)
+
+**Header:**
+
+```csv
+# Teleparallel Holoscreen CSV
+# timestamp=2026-01-12T23:45:00Z
+# framework=TEGR
+# gamma=0.15
+# torsion_scalar=1.234e-6
+i,x_norm,field,field_dot
+0,0.0000,0.0200,0.0000
+1,0.0052,0.0201,0.0001
+...
+```
+
+### TXT (Falsification Report)
+
+**Sections:**
+
+1. Geometry (Γ, r/r_s, M)
+1. Field statistics (mean, RMS)
+1. TEGR observables (T, K, S)
+1. Gauge-invariant quantities
+1. QED validation (PASS/FAIL)
+1. Double-slit verdict (NEUTRAL/FAVORS_TEGR/FAVORS_QM)
+
+-----
+
+## What Would Falsify This Framework?
+
+### TEGR-Specific Predictions
+
+1. **Negative Δχ² consistently:** QM always fits better than TEGR
+1. **QED violation:** `|Δα⁻¹| > 0.5` at M_Z scale
+1. **Gauge failure:** {θ, q_Δ}_Γ ≪ 2π systematically
+1. **Josephson anomaly:** Phase-voltage relation violates TEGR-corrected tanh
+1. **Boundary pathology:** θ(ω,Γ) exhibits unphysical discontinuities
+
+### Experimental Tests
+
+**High Priority:**
+
+1. Precision electron interferometry near massive objects
+1. Josephson junction arrays in strong gravitational fields
+1. Multi-scale torsion correlation measurements
+
+**Medium Priority:**
+4. Phase-space boundary flux measurements
+5. Torsion-induced redshift in atomic clocks
+
+-----
+
+## Known Limitations
+
+### Theoretical
+
+1. **No quantum gravity:** Field θ is classical
+1. **Schwarzschild only:** No rotation (Kerr), no charge (Reissner-Nordström)
+1. **Weak torsion:** Linearized around flat spacetime
+1. **Phenomenological bracket:** Canonicality indicator is not derived
+
+### Numerical
+
+1. **1D spatial:** Full 3+1D PDE is computationally prohibitive
+1. **Reference data:** REF_DATA should be replaced with real experiments
+1. **Grid resolution:** N_x = 192 may under-resolve near-horizon structure
+
+### Statistical
+
+1. **χ² proxies:** Not rigorous significance tests
+1. **No systematics:** Detector response, backgrounds not modeled
+1. **Single realization:** No ensemble averaging
+
+-----
+
+## Reproducibility
+
+### Software Requirements
+
+- Modern browser (Chrome 90+, Firefox 88+, Safari 14+)
+- JavaScript enabled
+- devicePixelRatio support for HiDPI rendering
+
+### Hardware Requirements
+
+- CPU: Any modern processor (2015+)
+- RAM: 100 MB minimum
+- Display: 1280×720 minimum resolution
+
+### Verification Checklist
+
+- [ ] TEGR/GR toggle produces different field profiles
+- [ ] PDE remains stable for Γ ∈ [0, 0.6]
+- [ ] QED recovery shows |Δα⁻¹| < 0.1 in both modes
+- [ ] Experimental sweeps complete without crashes
+- [ ] Exports contain framework identifier
+
+-----
+
+## Citation
+
+If you use this apparatus in published work:
+
+```bibtex
+@software{holoscreen2026,
+  title = {Teleparallel Holoscreen Laboratory: A Falsification Apparatus for TEGR},
+  author = {Lockwood, James and Lindberg, Sheldon and Cyrek, Christopher and Burkeen, Derek},
+  year = {2026},
+  version = {1.0.0-laboratory},
+  url = {https://example.com/holoscreen}
+}
+```
+
+-----
+
+## Changelog
+
+### v1.0.0-laboratory (2026-01-12)
+
+**Major:**
+
+- ✅ TEGR/GR framework toggle
+- ✅ Explicit torsion tensor formulation
+- ✅ Gauge-invariant boundary observables
+- ✅ QED recovery validation
+- ✅ Statistical disclaimers throughout
+
+**Improvements:**
+
+- Field semantics: θ(ω,Γ) vs R(x,t)
+- PDE stability auto-recovery
+- Input sanitization layer
+- Comprehensive data export
+- Interactive tooltips
+
+**Fixed:**
+
+- Removed canonicality overclaiming
+- Clarified QED correction scope
+- Documented bracket as diagnostic
+
+-----
+
+## Contact
+
+For questions, corrections, or collaboration:
+
+- **Email:** contact@example.com
+- **GitHub:** github.com/example/holoscreen
+- **Preprint:** arxiv.org/abs/XXXX.XXXXX
+
+-----
+
+**End of Scientific Documentation**
